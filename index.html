@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .chat-container {
+        width: 400px;
+        max-width: 100%;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .chat-header {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px;
+        text-align: center;
+      }
+      .chat-box {
+        height: 400px;
+        overflow-y: scroll;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .chat-input {
+        display: flex;
+        border-top: 1px solid #ccc;
+      }
+      .chat-input input {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        outline: none;
+      }
+      .chat-input button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+      }
+      .chat-input button:hover {
+        background-color: #45a049;
+      }
+      .message {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .user-message {
+        background-color: #e1f5fe;
+        text-align: right;
+      }
+      .bot-message {
+        background-color: #e0f7fa;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">Chatbot</div>
+      <div class="chat-box" id="chatBox">
+        <!-- Messages will be appended here -->
+      </div>
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+    <script>
+      async function sendMessage() {
+        const userInput = document.getElementById("userInput").value;
+        if (userInput.trim() === "") return;
+
+        // Append user message to chat box
+        appendMessage(userInput, "user-message");
+
+        // Clear the input field
+        document.getElementById("userInput").value = "";
+
+        try {
+          // Send request to FastAPI server
+          const response = await fetch("http://127.0.0.1:8000/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ msg: userInput }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Append bot response to chat box
+            appendMessage(data.response, "bot-message");
+          } else {
+            console.error("Server error:", response.statusText);
+            appendMessage("Server error. Please try again.", "bot-message");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          appendMessage("Network error. Please try again.", "bot-message");
+        }
+      }
+
+      function appendMessage(message, className) {
+        const chatBox = document.getElementById("chatBox");
+        const messageElement = document.createElement("div");
+        messageElement.className = `message ${className}`;
+        messageElement.textContent = message;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
