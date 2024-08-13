@@ -1,0 +1,4 @@
+# Ignore large model files
+intent_classifier_model/*.tflite
+intent_classifier_model/*.h5
+
